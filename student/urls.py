@@ -6,5 +6,7 @@ app_name='student'
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
-    path('',views.home,name='home')
+    
+   
+    path('dashboard/', views.student_dashboard_view, name='dashboard'), 
 ]
