@@ -1,4 +1,4 @@
-{% extends 'student/base.html' %}
+{% extends 'staff/base.html' %}
 {% block content %}
     <title>{{ page_title }}</title>
     <!-- Bootstrap CSS -->
@@ -34,6 +34,58 @@
         .status-rejected {
             color: #f44336;
         }
+
+        /* Form Section Styling */
+        .form-section {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .form-section h4 {
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .form-section .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-section label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-section input, .form-section select, .form-section textarea {
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .form-section textarea {
+            resize: vertical;
+        }
+
+        .form-section button {
+            padding: 10px 30px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            transition: background-color 0.3s;
+        }
+
+        .form-section button:hover {
+            background-color: #45a049;
+        }
+
+        .form-section .form-group:last-child {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -41,7 +93,7 @@
         <h1 class="text-center text-primary">{{ page_title }}</h1>
         
         <!-- Form Section -->
-        <div class="card p-4 mt-4">
+        <div class="card p-4 mt-4 form-section">
             <h4 class="text-center">Apply for Leave</h4>
             <form method="POST" novalidate>
                 {% csrf_token %}

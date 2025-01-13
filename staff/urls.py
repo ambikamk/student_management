@@ -11,4 +11,6 @@ urlpatterns = [
    
     path('dashboard/', views.dashboard_view, name='dashboard'), 
     path('apply-leave/', views.staff_apply_leave, name='staff_apply_leave'),
+    path('staff_feedback/', views.staff_feedback, name="staff_feedback"),
+    path('staff_feedback_save/', views.staff_feedback_save, name="staff_feedback_save"),
 ]

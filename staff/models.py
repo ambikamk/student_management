@@ -40,3 +40,14 @@ class LeaveRequest(models.Model):
 
     def _str_(self):
         return f"{self.user.username} - {self.get_status_display()}"
+    
+class FeedBackStaff(models.Model):
+    id = models.AutoField(primary_key=True)
+    staff_id = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    feedback = models.TextField()
+    feedback_reply = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
+
+

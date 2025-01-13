@@ -38,7 +38,7 @@ def dashboard_view(request):
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
-from .models import LeaveRequest, Staff, LeaveReportStaff
+from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff
 from .forms import LeaveReportStaffForm, LeaveRequestForm
 
 def staff_apply_leave(request):
@@ -67,3 +67,31 @@ def staff_apply_leave(request):
             messages.error(request, "Form contains errors!")
 
     return render(request, "staff/staff_apply_leave.html", context)
+
+
+def staff_feedback(request):
+    # Query the Staff model using the 'user' field instead of 'admin'
+    staff_obj = Staff.objects.get(user=request.user)  # Use 'user' instead of 'admin'
+    feedback_data = FeedBackStaff.objects.filter(staff_id=staff_obj)
+    context = {
+        "feedback_data": feedback_data
+    }
+    return render(request, "staff/staff_feedback.html", context)
+
+def staff_feedback_save(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid Method.")
+        return redirect('staff:staff_feedback')
+    else:
+        feedback = request.POST.get('feedback_message')
+        # Query the Staff model using the 'user' field instead of 'admin'
+        staff_obj = Staff.objects.get(user=request.user)  # Use 'user' instead of 'admin'
+
+        try:
+            add_feedback = FeedBackStaff(staff_id=staff_obj, feedback=feedback, feedback_reply="")
+            add_feedback.save()
+            messages.success(request, "Feedback Sent.")
+            return redirect('staff:staff_feedback')
+        except Exception as e:
+            messages.error(request, f"Failed to Send Feedback: {str(e)}")
+            return redirect('staff:staff_feedback')
