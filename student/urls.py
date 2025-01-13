@@ -9,4 +9,5 @@ urlpatterns = [
     
    
     path('dashboard/', views.student_dashboard_view, name='dashboard'), 
+    path('apply-leave/', views.student_apply_leave, name='student_apply_leave'),
 ]

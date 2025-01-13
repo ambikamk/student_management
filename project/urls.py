@@ -19,7 +19,7 @@ from django.urls import path,include
 from staff.views import login_view
 
 urlpatterns = [
-     path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
     path('', login_view, name='login'),
     path('staff/', include('staff.urls')),
     path('student/', include('student.urls')),

@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends 'staff/base.html' %}
+{% block content %}
     <title>Staff Dashboard</title>
 </head>
 <body>
     <h2>Welcome, {{ user.staff.full_name }} (Staff)</h2>
     <p>This is your staff dashboard.</p>
 </body>
-</html>
+{% endblock %}
