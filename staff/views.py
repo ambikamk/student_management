@@ -5,12 +5,15 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login,logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 from student.models import SessionYearModel, Student, Subject, Attendance, AttendanceReport
 from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff
-from .forms import LeaveReportStaffForm, LeaveRequestForm, NotificationForm
+from .forms import LeaveReportStaffForm, LeaveRequestForm, NotificationForm, StaffProfileForm
 
 def login_view(request):
     if request.method == 'POST':
@@ -60,7 +63,7 @@ def staff_apply_leave(request):
                 messages.success(
                     request, "Application for leave has been submitted for review."
                 )
-                return redirect(reverse('staff_apply_leave'))
+                return redirect(reverse('staff:staff_apply_leave'))
             except Exception as e:
                 messages.error(request, f"Could not submit: {str(e)}")
         else:
@@ -321,3 +324,31 @@ def save_updated_attendance(request):
     except Exception as e:
         messages.error(request, f"Error updating attendance: {str(e)}")
         return redirect('staff:update_attendance')
+
+
+@login_required
+def staff_profile(request):
+    staff = Staff.objects.get(user=request.user)
+    if request.method == 'POST':
+        form = StaffProfileForm(request.POST, instance=staff)
+        if form.is_valid():
+            form.save()
+            return redirect('staff:dashboard')  # Redirect to the profile page after saving
+    else:
+        form = StaffProfileForm(instance=staff)
+    return render(request, 'staff/staff_profile.html', {'form': form})
+
+def change_password_staff(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Keeps the user logged in after password change
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('staff:dashboard')  # Redirect to staff's dashboard
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    
+    return render(request, 'staff/change_password.html', {'form': form})

@@ -1,5 +1,5 @@
 from django import forms
-from .models import LeaveReportStudent
+from .models import LeaveReportStudent,Student
 
 class LeaveReportStudentForm(forms.ModelForm):
     def _init_(self, *args, **kwargs):
@@ -47,3 +47,16 @@ class NotificationForm(forms.ModelForm):
             'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'student_id': forms.Select(attrs={'class': 'form-control'}),
         }
+
+class StudentProfileForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ['full_name', 'email', 'phone', 'address', 'session_year_id', 'course']  # Add other fields you want to allow for update
+
+from django.contrib.auth.forms import PasswordChangeForm
+
+# Custom Password Change Form (optional, if you want to customize it)
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))

@@ -15,5 +15,6 @@ urlpatterns = [
     path('student/notifications/', views.student_notifications, name='student_notifications'),
     path('view-attendance/', views.view_attendance, name='view_attendance'),
     path('attendance-detail/', views.attendance_detail, name='attendance_detail'),
-
+    path('student/profile/', views.student_profile, name='student_profile'),
+    path('student/change_password/', views.change_password_student, name='change_password_student'),
 ]

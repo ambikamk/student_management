@@ -1,0 +1,84 @@
+<!-- staff_profile.html -->
+{% extends 'staff/base.html' %}
+{% block content %}
+  <h2 class="profile-title">Update Staff Profile</h2>
+  <div class="profile-form-container">
+    <form method="POST" class="profile-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="update-btn">Update Profile</button>
+    </form>
+  </div>
+{% endblock %}
+
+{% block extra_styles %}
+  <style>
+    /* General styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .profile-title {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 30px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .profile-form-container {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 25px;
+      background-color: #fff;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    .profile-form p {
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    .profile-form input, .profile-form select, .profile-form textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 12px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    .profile-form textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .update-btn {
+      background-color: #1c26e5;
+      color: white;
+      padding: 14px;
+      border: none;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .update-btn:hover {
+      background-color: #2222eb;
+    }
+
+    /* Small screen responsiveness */
+    @media (max-width: 768px) {
+      .profile-form-container {
+        padding: 15px;
+      }
+    }
+  </style>
+{% endblock %}

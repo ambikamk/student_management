@@ -1,5 +1,5 @@
 from django import forms
-from .models import LeaveReportStaff
+from .models import LeaveReportStaff,Staff
 
 class LeaveReportStaffForm(forms.ModelForm):
     def _init_(self, *args, **kwargs):
@@ -47,3 +47,17 @@ class NotificationForm(forms.ModelForm):
             'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'staff_id': forms.Select(attrs={'class': 'form-control'}),
 }
+
+class StaffProfileForm(forms.ModelForm):
+    class Meta:
+        model = Staff
+        fields = ['full_name', 'email', 'phone', 'address']  
+
+
+from django.contrib.auth.forms import PasswordChangeForm
+
+# Custom Password Change Form (optional, if you want to customize it)
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))

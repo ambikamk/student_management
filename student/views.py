@@ -4,7 +4,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
 from .models import FeedBackStudent, LeaveRequest, Student, LeaveReportStudent, AttendanceReport, Subject
-from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm  # Create a form to handle notification creation
+from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm  # Create a form to handle notification creation
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 # ... (rest of the code remains the same)
 @login_required
@@ -174,3 +176,30 @@ def attendance_detail(request):
         return redirect('student:view_attendance')
 
 # ... (rest of the code remains the same)
+
+@login_required
+def student_profile(request):
+    student = Student.objects.get(user=request.user)
+    if request.method == 'POST':
+        form = StudentProfileForm(request.POST, instance=student)
+        if form.is_valid():
+            form.save()
+            return redirect('student:dashboard')  # Redirect to the profile page after saving
+    else:
+        form = StudentProfileForm(instance=student)
+    return render(request, 'student/student_profile.html', {'form': form})
+
+def change_password_student(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Keeps the user logged in after password change
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('student:dashboard')  # Redirect to student's dashboard
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    
+    return render(request, 'student/change_password.html', {'form': form})

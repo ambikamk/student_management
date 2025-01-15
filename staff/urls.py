@@ -15,4 +15,6 @@ urlpatterns = [
     path('save-attendance/', views.save_attendance, name='save_attendance'),
     path('update-attendance/', views.update_attendance, name='update_attendance'),
     path('save-updated-attendance/', views.save_updated_attendance, name='save_updated_attendance'),
+    path('staff/profile/', views.staff_profile, name='staff_profile'),
+    path('staff/change_password/', views.change_password_staff, name='change_password_staff'),
 ]
