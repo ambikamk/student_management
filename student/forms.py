@@ -35,3 +35,15 @@ class LeaveRequestForm(forms.ModelForm):
         fields = ['date', 'message']
     date = forms.DateField(widget=forms.SelectDateWidget())
     message = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
+
+from django import forms
+from .models import NotificationStudent
+
+class NotificationForm(forms.ModelForm):
+    class Meta:
+        model = NotificationStudent
+        fields = ['student_id', 'message']
+        widgets = {
+            'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'student_id': forms.Select(attrs={'class': 'form-control'}),
+        }

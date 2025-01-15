@@ -1,6 +1,10 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+
+
+
+
 class Staff(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=100)
@@ -20,10 +24,7 @@ class LeaveReportStaff(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-# Create your models here.
-# models.py
-from django.db import models
-from django.contrib.auth.models import User
+
 
 class LeaveRequest(models.Model):
     STATUS_CHOICES = [
@@ -50,4 +51,10 @@ class FeedBackStaff(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
 
-
+class NotificationStaffs(models.Model):
+    id = models.AutoField(primary_key=True)
+    staff_id = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()

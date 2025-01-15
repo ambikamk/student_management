@@ -1,9 +1,12 @@
 from django.contrib import admin
 from .models import Student,Course
-from .models import LeaveRequest,FeedBackStudent
+from .models import LeaveRequest,FeedBackStudent,Subject,SessionYearModel,NotificationStudent
 
 admin.site.register(Student)
 admin.site.register(Course)
+admin.site.register(Subject)
+admin.site.register(SessionYearModel)
+admin.site.register(NotificationStudent)
 
 
 

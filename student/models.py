@@ -1,14 +1,35 @@
 from django.contrib.auth.models import User
 from django.db import models
 from staff.models import Staff
+from django.utils import timezone
+
+
+class SessionYearModel(models.Model):
+    id = models.AutoField(primary_key=True)
+    session_start_year = models.DateField()
+    session_end_year = models.DateField()
+
+    def __str__(self):
+        return f"{self.session_start_year.year} - {self.session_end_year.year}"
 
 class Course(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    staff = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name='courses')
+   
 
     def __str__(self):
         return self.name
+
+
+class Subject(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField()
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, default=1) #need to give defauult course
+    staff= models.ForeignKey(Staff, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
 
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -16,6 +37,7 @@ class Student(models.Model):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15)
     address = models.TextField()
+    session_year_id = models.ForeignKey(SessionYearModel, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
@@ -30,10 +52,7 @@ class LeaveReportStudent(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-# Create your models here.
-# models.py
-from django.db import models
-from django.contrib.auth.models import User
+
 
 class LeaveRequest(models.Model):
     STATUS_CHOICES = [
@@ -62,5 +81,46 @@ class FeedBackStudent(models.Model):
     objects = models.Manager()
 
 
-
 # Create your models here.
+
+
+class NotificationStudent(models.Model):
+    id = models.AutoField(primary_key=True)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
+
+
+class Attendance(models.Model):
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    attendance_date = models.DateField(default=timezone.now)
+    session_year = models.ForeignKey(SessionYearModel, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.subject.name} - {self.attendance_date}"
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_at = timezone.now()
+        self.updated_at = timezone.now()
+        return super().save(*args, **kwargs)
+
+class AttendanceReport(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE)
+    status = models.BooleanField(default=False)  # True for Present, False for Absent
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.student.full_name} - {self.attendance.attendance_date} - {'Present' if self.status else 'Absent'}"
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_at = timezone.now()
+        self.updated_at = timezone.now()
+        return super().save(*args, **kwargs)

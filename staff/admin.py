@@ -1,7 +1,13 @@
 from django.contrib import admin
-from .models import Staff,LeaveRequest,FeedBackStaff
+
+from student.models import Attendance, AttendanceReport
+from .models import Staff,LeaveRequest,FeedBackStaff,NotificationStaffs
 
 admin.site.register(Staff)
+admin.site.register(NotificationStaffs)
+admin.site.register(Attendance)
+admin.site.register(AttendanceReport)
+
 
 
 @admin.register(LeaveRequest)
@@ -21,6 +27,8 @@ class LeaveRequestAdmin(admin.ModelAdmin):
         self.message_user(request, f"{queryset.count()} leave requests have been rejected.")
     reject_requests.short_description = "Reject selected leave requests"
 # Register your models here.
+
+
 
 @admin.register(FeedBackStaff)
 class FeedBackStaffAdmin(admin.ModelAdmin):

@@ -3,13 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.contrib import messages
-from .models import FeedBackStudent, LeaveRequest, Student, LeaveReportStudent
-from .forms import LeaveReportStudentForm, LeaveRequestForm
+from .models import FeedBackStudent, LeaveRequest, Student, LeaveReportStudent, AttendanceReport, Subject
+from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm  # Create a form to handle notification creation
 
-
-def home(request):
-    return render(request,"student/home.html")
-
+# ... (rest of the code remains the same)
 @login_required
 def student_dashboard_view(request):
     return render(request, 'student/dashboard.html', {'user': request.user})
@@ -51,6 +48,7 @@ def student_feedback(request):
         "feedback_data": feedback_data
     }
     return render(request, 'student/student_feedback.html', context)
+
 def student_feedback_save(request):
     if request.method != "POST":
         messages.error(request, "Invalid Method.")
@@ -67,3 +65,112 @@ def student_feedback_save(request):
         except:
             messages.error(request, "Failed to Send Feedback.")
             return redirect('student:student_feedback')
+        
+        
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib import messages
+from .models import NotificationStudent, Student
+from .forms import NotificationForm  # Create a form to handle notification creation
+
+# Check if the user is an admin
+def is_admin(user):
+    return user.is_superuser
+
+# Admin view to send a notification to a student
+@user_passes_test(is_admin)
+def send_notification_to_student(request):
+    if request.method == "POST":
+        form = NotificationForm(request.POST)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, "Notification sent successfully.")
+                return redirect('send_notification_to_student')  # Replace with the URL name
+            except Exception as e:
+                messages.error(request, f"Error sending notification: {e}")
+        else:
+            messages.error(request, "Invalid form submission.")
+    else:
+        form = NotificationForm()
+
+    context = {
+        'form': form,
+        'page_title': 'Send Notification to Student',
+    }
+    return render(request, "common/notification_template.html", context)
+
+# Student view to see notifications
+@login_required
+def student_notifications(request):
+    student = get_object_or_404(Student, user=request.user)
+    notifications = NotificationStudent.objects.filter(student_id=student).order_by('-created_at')
+
+    context = {
+        'notifications': notifications,
+        'page_title': 'My Notifications',
+    }
+    return render(request, "common/notification_template.html", context)
+# Add the following views
+
+@login_required
+def view_attendance(request):
+    student = request.user.student
+    attendance_reports = AttendanceReport.objects.filter(student=student).select_related(
+        'attendance__subject', 'attendance__session_year'
+    ).order_by('-attendance__attendance_date')
+
+    # Group attendance by subject
+    subjects = Subject.objects.filter(course=student.course)
+    attendance_by_subject = {}
+
+    for subject in subjects:
+        subject_attendance = attendance_reports.filter(attendance__subject=subject)
+        if subject_attendance.exists():
+            total_classes = subject_attendance.count()
+            present_count = subject_attendance.filter(status=True).count()
+            attendance_percentage = (present_count / total_classes) * 100 if total_classes > 0 else 0
+
+            attendance_by_subject[subject] = {
+                'total_classes': total_classes,
+                'present_count': present_count,
+                'attendance_percentage': round(attendance_percentage, 2),
+                'attendance_records': subject_attendance
+            }
+
+    context = {
+        'attendance_by_subject': attendance_by_subject,
+        'student': student
+    }
+
+    return render(request, 'student/view_attendance.html', context)
+
+@login_required
+def attendance_detail(request):
+    student = request.user.student
+    subject_id = request.GET.get('subject')
+
+    if not subject_id:
+        messages.error(request, "Please select a subject")
+        return redirect('student:view_attendance')
+
+    try:
+        subject = Subject.objects.get(id=subject_id, course=student.course)
+        attendance_reports = AttendanceReport.objects.filter(
+            student=student,
+            attendance__subject=subject
+        ).select_related('attendance').order_by('-attendance__attendance_date')
+
+        context = {
+            'subject': subject,
+            'attendance_reports': attendance_reports,
+            'student': student
+        }
+
+        return render(request, 'student/attendance_detail.html', context)
+
+    except Subject.DoesNotExist:
+        messages.error(request, "Subject not found")
+        return redirect('student:view_attendance')
+
+# ... (rest of the code remains the same)

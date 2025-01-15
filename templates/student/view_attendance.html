@@ -1,0 +1,54 @@
+{% extends 'student/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">My Attendance</h2>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if attendance_by_subject %}
+        <div class="row">
+            {% for subject, data in attendance_by_subject.items %}
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ subject.name }}</h5>
+                            <div class="attendance-stats">
+                                <p class="mb-2">
+                                    Total Classes: <strong>{{ data.total_classes }}</strong>
+                                </p>
+                                <p class="mb-2">
+                                    Classes Attended: <strong>{{ data.present_count }}</strong>
+                                </p>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar {% if data.attendance_percentage >= 75 %}bg-success{% elif data.attendance_percentage >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ data.attendance_percentage }}%" 
+                                         aria-valuenow="{{ data.attendance_percentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ data.attendance_percentage }}%
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{% url 'student:attendance_detail' %}?subject={{ subject.id }}" 
+                               class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No attendance records found.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
