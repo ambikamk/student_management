@@ -4,7 +4,8 @@ from .views import login_view, logout_view
 
 app_name='staff'
 urlpatterns = [
-    path('', login_view, name='login'),
+    path('', views.home, name='home'),
+    path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('dashboard/', views.dashboard_view, name='dashboard'), 
     path('apply-leave/', views.staff_apply_leave, name='staff_apply_leave'),

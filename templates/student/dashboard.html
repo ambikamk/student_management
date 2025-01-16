@@ -1,9 +1,54 @@
 {% extends 'student/base.html' %}
 {% block content %}
     <title>Student Dashboard</title>
-</head>
-<body>
-    <h2>Welcome, {{ user.student.full_name }} (Student)</h2>
-    <p>This is your student dashboard.</p>
-</body>
+
+    <div class="container mt-4">
+        <!-- Cards Row -->
+        <div class="row">
+            <!-- Card for Total Attendance -->
+            <div class="col-md-3 mb-4">
+                <div class="card" style="height:150px; background-color: antiquewhite;">
+                    <div class="card-body">
+                        
+                        <p class="card-text" style=" font-size: 40px;">{{ total_attendance }}</p>
+                        <h5 class="card-title">Total Attendance</h5>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card for Absent -->
+            <div class="col-md-3 mb-4">
+                <div class="card" style="height:150px; background-color: rgb(248, 194, 124);">
+                    <div class="card-body">
+                       
+                        <p class="card-text" style=" font-size: 40px;">{{ absent_count }}</p>
+                        <h5 class="card-title">Absent</h5>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card for Present -->
+            <div class="col-md-3 mb-4">
+                <div class="card" style="height:150px; background-color: rgb(214, 184, 145);">
+                    <div class="card-body">
+                        
+                        <p class="card-text" style=" font-size: 40px;">{{ present_count }}</p>
+                        <h5 class="card-title">Present</h5>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card for Total Subjects -->
+            <div class="col-md-3 mb-4">
+                <div class="card" style="height:150px; background-color: rgb(240, 196, 139);">
+                    <div class="card-body">
+                        
+                        <p class="card-text" style=" font-size: 40px;">{{ total_subjects }}</p>
+                        <h5 class="card-title">Total Subjects</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 {% endblock %}

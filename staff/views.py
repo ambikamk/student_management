@@ -1,19 +1,22 @@
 import json
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login,logout
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib import messages
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import update_session_auth_hash
-
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import authenticate, login,logout
+from django.shortcuts import render ,redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
 from student.models import SessionYearModel, Student, Subject, Attendance, AttendanceReport
-from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff
+from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff,NotificationStaffs
 from .forms import LeaveReportStaffForm, LeaveRequestForm, NotificationForm, StaffProfileForm
+
+
+
+def home(request):
+    return render(request, 'common/home.html')
 
 def login_view(request):
     if request.method == 'POST':
@@ -38,11 +41,33 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('staff:login')
 
 @login_required
 def dashboard_view(request):
-    return render(request, 'staff/dashboard.html', {'user': request.user})
+    # Get the logged-in staff member
+    staff = Staff.objects.get(user=request.user)
+
+    # Count of students under this staff
+    students_count = Student.objects.filter(course__subject__staff=staff).distinct().count()
+
+    # Count of total attendance taken by this staff
+    attendance_count = Attendance.objects.filter(subject__staff=staff).count()
+
+    # Count of total leaves taken by this staff
+    leaves_count = LeaveReportStaff.objects.filter(staff=staff).count()
+
+    # Count of total subjects assigned to this staff
+    subjects_count = Subject.objects.filter(staff=staff).count()
+
+    context = {
+        'students_count': students_count,
+        'attendance_count': attendance_count,
+        'leaves_count': leaves_count,
+        'subjects_count': subjects_count,
+        'user': request.user
+    }
+    return render(request, 'staff/dashboard.html', context)
 
 def staff_apply_leave(request):
     form = LeaveRequestForm(request.POST or None)
@@ -101,11 +126,6 @@ def staff_feedback_save(request):
         
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib import messages
-from .models import NotificationStaffs, Staff
-from .forms import NotificationForm  # Create a form to handle notification creation
 
 # Check if the user is an admin
 def is_admin(user):

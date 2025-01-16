@@ -12,6 +12,8 @@
     <script src="https://unpkg.com/sweetalert2@7.8.2/dist/sweetalert2.all.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 
 
     <style>
@@ -59,7 +61,7 @@ header img {
                    
                     <div class="d-flex align-items-center">
                        
-                        <i class="bi bi-person me-2"></i> <span class="" style="margin-right:100px;" >Hi,{{ request.user.username }}</span>
+                        <i class="bi bi-person me-2"></i> <span class="" style="margin-right:100px;" >{{ request.user.username }}</span>
                     </div>
                 </div>
             </header>
