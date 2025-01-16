@@ -5,7 +5,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm  
-from .models import FeedBackStudent, LeaveRequest, Student, LeaveReportStudent, AttendanceReport, Subject,NotificationStudent
+from .models import FeedBackStudent, LeaveRequest, Student, LeaveReportStudent, AttendanceReport, Subject,NotificationStudent, Result
  
 
     
@@ -220,3 +220,30 @@ def change_password_student(request):
         form = PasswordChangeForm(request.user)
     
     return render(request, 'student/change_password.html', {'form': form})
+
+@login_required
+def view_result(request):
+    student = Student.objects.get(user=request.user)
+    results = Result.objects.filter(student=student)
+    
+    result_data = []
+    for result in results:
+        # Calculate status (Pass/Fail) - assuming 40% is passing mark
+        total_marks = result.assignment_marks + result.exam_marks
+        max_marks = 100  # Assuming total possible marks is 100
+        percentage = (total_marks / max_marks) * 100
+        status = "Pass" if percentage >= 40 else "Fail"
+        
+        result_data.append({
+            'subject': result.subject,
+            'assignment_marks': result.assignment_marks,
+            'exam_marks': result.exam_marks,
+            'total_marks': total_marks,
+            'status': status
+        })
+    
+    context = {
+        'results': result_data,
+        'student': student
+    }
+    return render(request, 'student/view_result.html', context)

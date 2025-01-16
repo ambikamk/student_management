@@ -1,0 +1,133 @@
+{% extends 'staff/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Add Student Results</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group row">
+                        <div class="col-sm-6">
+                            <label for="subject">Subject</label>
+                            <select class="form-control" id="subject" required>
+                                <option value="">Select Subject</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="session_year">Session Year</label>
+                            <select class="form-control" id="session_year" required>
+                                <option value="">Select Session Year</option>
+                                {% for year in session_years %}
+                                <option value="{{ year.id }}">{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div id="student_list" style="display: none;">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Assignment Marks</th>
+                                        <th>Exam Marks</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student_table_body">
+                                </tbody>
+                            </table>
+                            <button type="button" class="btn btn-primary" id="save_results">Save Results</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_js %}
+<script>
+$(document).ready(function() {
+    function loadStudents() {
+        const subject = $('#subject').val();
+        const session_year = $('#session_year').val();
+        
+        if (subject && session_year) {
+            $.get('{% url "staff:get_students" %}', {
+                subject: subject,
+                session_year: session_year
+            }, function(data) {
+                $('#student_table_body').empty();
+                data.students.forEach(function(student) {
+                    const row = `
+                        <tr data-student-id="${student.id}">
+                            <td>${student.name}</td>
+                            <td><input type="number" class="form-control assignment-marks" value="${student.assignment_marks}" min="0" max="100"></td>
+                            <td><input type="number" class="form-control exam-marks" value="${student.exam_marks}" min="0" max="100"></td>
+                            <td class="total-marks">${student.assignment_marks + student.exam_marks}</td>
+                        </tr>
+                    `;
+                    $('#student_table_body').append(row);
+                });
+                $('#student_list').show();
+            });
+        } else {
+            $('#student_list').hide();
+        }
+    }
+
+    $('#subject, #session_year').change(loadStudents);
+
+    $(document).on('input', '.assignment-marks, .exam-marks', function() {
+        const row = $(this).closest('tr');
+        const assignment = parseFloat(row.find('.assignment-marks').val()) || 0;
+        const exam = parseFloat(row.find('.exam-marks').val()) || 0;
+        row.find('.total-marks').text(assignment + exam);
+    });
+
+    $('#save_results').click(function() {
+        const subject = $('#subject').val();
+        const session_year = $('#session_year').val();
+        const results = [];
+
+        $('#student_table_body tr').each(function() {
+            const row = $(this);
+            results.push({
+                student_id: row.data('student-id'),
+                assignment_marks: row.find('.assignment-marks').val(),
+                exam_marks: row.find('.exam-marks').val()
+            });
+        });
+
+        $.ajax({
+            url: '{% url "staff:save_result" %}',
+            method: 'POST',
+            data: {
+                subject: subject,
+                session_year: session_year,
+                student_results: JSON.stringify(results),
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert('Results saved successfully!');
+                }
+            },
+            error: function() {
+                alert('Error saving results. Please try again.');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

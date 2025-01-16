@@ -2,17 +2,16 @@ import json
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import authenticate, login,logout
-from django.shortcuts import render ,redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-from student.models import SessionYearModel, Student, Subject, Attendance, AttendanceReport
-from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff,NotificationStaffs
+from student.models import SessionYearModel, Student, Subject, Attendance, AttendanceReport, Result
+from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff, NotificationStaffs
 from .forms import LeaveReportStaffForm, LeaveRequestForm, NotificationForm, StaffProfileForm
-
 
 
 def home(request):
@@ -372,3 +371,64 @@ def change_password_staff(request):
         form = PasswordChangeForm(request.user)
     
     return render(request, 'staff/change_password.html', {'form': form})
+
+@login_required
+def add_result(request):
+    staff = Staff.objects.get(user=request.user)
+    subjects = Subject.objects.filter(staff=staff)
+    session_years = SessionYearModel.objects.all()
+    
+    context = {
+        'subjects': subjects,
+        'session_years': session_years,
+    }
+    
+    return render(request, 'staff/add_result.html', context)
+
+@login_required
+def get_students(request):
+    subject_id = request.GET.get('subject')
+    session_year_id = request.GET.get('session_year')
+    
+    students = Student.objects.filter(session_year_id=session_year_id, course=Subject.objects.get(id=subject_id).course)
+    student_list = []
+    
+    for student in students:
+        result = Result.objects.filter(student=student, subject_id=subject_id, session_year_id=session_year_id).first()
+        student_data = {
+            'id': student.id,
+            'name': student.full_name,
+            'assignment_marks': result.assignment_marks if result else 0,
+            'exam_marks': result.exam_marks if result else 0
+        }
+        student_list.append(student_data)
+    
+    return JsonResponse({'students': student_list})
+
+@login_required
+def save_result(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+        
+    subject_id = request.POST.get('subject')
+    session_year_id = request.POST.get('session_year')
+    student_data = json.loads(request.POST.get('student_results'))
+    
+    for data in student_data:
+        student = Student.objects.get(id=data['student_id'])
+        result, created = Result.objects.get_or_create(
+            student=student,
+            subject_id=subject_id,
+            session_year_id=session_year_id,
+            defaults={
+                'assignment_marks': float(data['assignment_marks']),
+                'exam_marks': float(data['exam_marks'])
+            }
+        )
+        
+        if not created:
+            result.assignment_marks = float(data['assignment_marks'])
+            result.exam_marks = float(data['exam_marks'])
+            result.save()
+    
+    return JsonResponse({'status': 'success'})

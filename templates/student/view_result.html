@@ -1,0 +1,50 @@
+{% extends 'student/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">My Results</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Assignment Marks</th>
+                                    <th>Exam Marks</th>
+                                    <th>Total Marks</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in results %}
+                                <tr>
+                                    <td>{{ result.subject.name }}</td>
+                                    <td>{{ result.assignment_marks }}</td>
+                                    <td>{{ result.exam_marks }}</td>
+                                    <td>{{ result.total_marks }}</td>
+                                    <td>
+                                        <span class="badge {% if result.status == 'Pass' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ result.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No results found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

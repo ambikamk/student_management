@@ -18,4 +18,7 @@ urlpatterns = [
     path('save-updated-attendance/', views.save_updated_attendance, name='save_updated_attendance'),
     path('staff/profile/', views.staff_profile, name='staff_profile'),
     path('staff/change_password/', views.change_password_staff, name='change_password_staff'),
+    path('add_result/', views.add_result, name='add_result'),
+    path('get_students/', views.get_students, name='get_students'),
+    path('save_result/', views.save_result, name='save_result'),
 ]
