@@ -124,3 +124,32 @@ class AttendanceReport(models.Model):
             self.created_at = timezone.now()
         self.updated_at = timezone.now()
         return super().save(*args, **kwargs)
+
+
+class Result(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    session_year = models.ForeignKey(SessionYearModel, on_delete=models.CASCADE)
+    assignment_marks = models.FloatField(default=0)
+    exam_marks = models.FloatField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.student.full_name} - {self.subject.name}"
+
+    @property
+    def total_marks(self):
+        return self.assignment_marks + self.exam_marks
+
+
+class StudyMaterial(models.Model):
+    title = models.CharField(max_length=255)
+    subject = models.ForeignKey('student.Subject', on_delete=models.CASCADE)
+    session_year = models.ForeignKey(SessionYearModel, on_delete=models.CASCADE)
+    uploaded_by = models.ForeignKey('staff.Staff', on_delete=models.CASCADE)
+    file = models.FileField(upload_to='study_materials/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.subject.name}"

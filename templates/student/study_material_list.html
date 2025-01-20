@@ -1,0 +1,55 @@
+{% extends 'student/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Available Study Materials</h2>
+
+    <form method="POST" class="mb-4">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-5">
+                {{ form.subject }}
+            </div>
+            <div class="col-md-5">
+                {{ form.session_year }}
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-block">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Subject</th>
+                    <th>Session Year</th>
+                    <th>Uploaded By</th>
+                    <th>File</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for material in materials %}
+                <tr>
+                    <td>{{ material.title }}</td>
+                    <td>{{ material.subject.name }}</td>
+                    <td>{{ material.session_year.session_start_year.year }} - {{ material.session_year.session_end_year.year }}</td>
+                    <td>{{ material.uploaded_by.full_name }}</td>
+                    <td>
+                        <a href="{{ material.file.url }}" target="_blank" class="btn btn-success btn-sm">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-muted text-center">No study materials available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -53,12 +53,13 @@
         <h4>Global University</h4>
         <a href="{% url 'student:dashboard' %}"><i class="bi bi-house-door-fill"></i> Home</a>
         <a href="{% url 'student:view_attendance' %}"><i class="bi bi-calendar-check-fill"></i> View Attendance</a>
-        <a href="#"><i class="bi bi-clipboard-data-fill"></i> View Results</a>
+        <a href="{% url 'student:view_result' %}"><i class="bi bi-award-fill"></i> View Results</a>
+        <a href="{% url 'student:study_material_list' %}"><i class="bi bi-book-fill"></i> View Materials</a>
         <a href="{% url 'student:student_apply_leave' %}"><i class="bi bi-envelope-fill"></i> Apply for Leave</a>
         <a href="{% url 'student:student_feedback' %}"><i class="bi bi-chat-left-text-fill"></i> Send Feedback</a>
         <a href="{% url 'student:student_notifications' %}"><i class="bi bi-bell-fill"></i> Notification</a>
         <a href="{% url 'student:student_profile' %}"><i class="bi bi-person-fill"></i>My Profile</a>
-        <a href="{% url 'student:change_password_student' %}"><i class="bi bi-person-fill"></i>Change Password</a>
+        <a href="{% url 'student:change_password_student' %}"><i class="bi bi-shield-lock"></i>Change Password</a>
         <a href="{% url 'staff:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
 
     </div>

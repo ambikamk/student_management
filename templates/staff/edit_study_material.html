@@ -1,0 +1,24 @@
+{% extends 'staff/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg p-4">
+        <h2 class="text-center mb-4 text-primary">Edit Study Material</h2>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.as_p }}
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> Update
+                </button>
+                <a href="{% url 'staff:upload_study_material' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Materials
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

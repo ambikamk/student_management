@@ -5,8 +5,6 @@ from .models import Staff,LeaveRequest,FeedBackStaff,NotificationStaffs
 
 admin.site.register(Staff)
 admin.site.register(NotificationStaffs)
-admin.site.register(Attendance)
-admin.site.register(AttendanceReport)
 
 
 

@@ -1,19 +1,23 @@
 import json
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login,logout
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib import messages
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import update_session_auth_hash
-
-from student.models import SessionYearModel, Student, Subject, Attendance, AttendanceReport
-from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import authenticate, login,logout
+from django.shortcuts import render ,redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from student.forms import StudyMaterialForm
+from student.models import Result, SessionYearModel, Student, StudyMaterial, Subject, Attendance, AttendanceReport
+from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff,NotificationStaffs
 from .forms import LeaveReportStaffForm, LeaveRequestForm, NotificationForm, StaffProfileForm
+
+
+
+def home(request):
+    return render(request, 'common/home.html')
 
 def login_view(request):
     if request.method == 'POST':
@@ -38,11 +42,33 @@ def login_view(request):
 @login_required
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('staff:login')
 
 @login_required
 def dashboard_view(request):
-    return render(request, 'staff/dashboard.html', {'user': request.user})
+    # Get the logged-in staff member
+    staff = Staff.objects.get(user=request.user)
+
+    # Count of students under this staff
+    students_count = Student.objects.filter(course__subject__staff=staff).distinct().count()
+
+    # Count of total attendance taken by this staff
+    attendance_count = Attendance.objects.filter(subject__staff=staff).count()
+
+    # Count of total leaves taken by this staff
+    leaves_count = LeaveReportStaff.objects.filter(staff=staff).count()
+
+    # Count of total subjects assigned to this staff
+    subjects_count = Subject.objects.filter(staff=staff).count()
+
+    context = {
+        'students_count': students_count,
+        'attendance_count': attendance_count,
+        'leaves_count': leaves_count,
+        'subjects_count': subjects_count,
+        'user': request.user
+    }
+    return render(request, 'staff/dashboard.html', context)
 
 def staff_apply_leave(request):
     form = LeaveRequestForm(request.POST or None)
@@ -101,11 +127,6 @@ def staff_feedback_save(request):
         
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib import messages
-from .models import NotificationStaffs, Staff
-from .forms import NotificationForm  # Create a form to handle notification creation
 
 # Check if the user is an admin
 def is_admin(user):
@@ -352,3 +373,110 @@ def change_password_staff(request):
         form = PasswordChangeForm(request.user)
     
     return render(request, 'staff/change_password.html', {'form': form})
+
+
+@login_required
+def add_result(request):
+    staff = Staff.objects.get(user=request.user)
+    subjects = Subject.objects.filter(staff=staff)
+    session_years = SessionYearModel.objects.all()
+    
+    context = {
+        'subjects': subjects,
+        'session_years': session_years,
+    }
+    
+    return render(request, 'staff/add_result.html', context)
+
+@login_required
+def get_students(request):
+    subject_id = request.GET.get('subject')
+    session_year_id = request.GET.get('session_year')
+    
+    students = Student.objects.filter(session_year_id=session_year_id, course=Subject.objects.get(id=subject_id).course)
+    student_list = []
+    
+    for student in students:
+        result = Result.objects.filter(student=student, subject_id=subject_id, session_year_id=session_year_id).first()
+        student_data = {
+            'id': student.id,
+            'name': student.full_name,
+            'assignment_marks': result.assignment_marks if result else 0,
+            'exam_marks': result.exam_marks if result else 0
+        }
+        student_list.append(student_data)
+    
+    return JsonResponse({'students': student_list})
+
+@login_required
+def save_result(request):
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+        
+    subject_id = request.POST.get('subject')
+    session_year_id = request.POST.get('session_year')
+    student_data = json.loads(request.POST.get('student_results'))
+    
+    for data in student_data:
+        student = Student.objects.get(id=data['student_id'])
+        result, created = Result.objects.get_or_create(
+            student=student,
+            subject_id=subject_id,
+            session_year_id=session_year_id,
+            defaults={
+                'assignment_marks': float(data['assignment_marks']),
+                'exam_marks': float(data['exam_marks'])
+            }
+        )
+        
+        if not created:
+            result.assignment_marks = float(data['assignment_marks'])
+            result.exam_marks = float(data['exam_marks'])
+            result.save()
+    
+    return JsonResponse({'status': 'success'})
+
+
+@login_required
+def upload_study_material(request):
+    if not hasattr(request.user, 'staff'):
+        return redirect('home')  # Redirect if not staff
+
+    # Fetch study materials uploaded by the logged-in staff
+    materials = StudyMaterial.objects.filter(uploaded_by=request.user.staff)
+
+    if request.method == "POST":
+        form = StudyMaterialForm(request.POST, request.FILES)
+        if form.is_valid():
+            study_material = form.save(commit=False)
+            study_material.uploaded_by = request.user.staff  # Assign the logged-in staff
+            study_material.save()
+            return redirect('staff:upload_study_material')  # Reload page after upload
+    else:
+        form = StudyMaterialForm()
+
+    return render(request, 'staff/upload_study_material.html', {
+        'form': form,
+        'materials': materials  # Pass study materials to the template
+    })
+
+@login_required
+def edit_study_material(request, material_id):
+    material = get_object_or_404(StudyMaterial, id=material_id, uploaded_by=request.user.staff)
+
+    if request.method == "POST":
+        form = StudyMaterialForm(request.POST, request.FILES, instance=material)
+        if form.is_valid():
+            form.save()
+            return redirect('staff:upload_study_material')
+    else:
+        form = StudyMaterialForm(instance=material)
+
+    return render(request, 'staff/edit_study_material.html', {'form': form})
+
+
+@login_required
+def delete_study_material(request, material_id):
+    material = get_object_or_404(StudyMaterial, id=material_id, uploaded_by=request.user.staff)
+    material.delete()
+    return redirect('staff:upload_study_material')

@@ -1,5 +1,5 @@
 from django import forms
-from .models import LeaveReportStudent,Student
+from .models import LeaveReportStudent, SessionYearModel,Student, Subject
 
 class LeaveReportStudentForm(forms.ModelForm):
     def _init_(self, *args, **kwargs):
@@ -60,3 +60,16 @@ class CustomPasswordChangeForm(PasswordChangeForm):
     old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+
+from django import forms
+from .models import StudyMaterial
+
+class StudyMaterialForm(forms.ModelForm):
+    class Meta:
+        model = StudyMaterial
+        fields = ['title', 'subject', 'session_year', 'file']
+
+class StudyMaterialFilterForm(forms.Form):
+    subject = forms.ModelChoiceField(queryset=Subject.objects.all(), empty_label="Select Subject")
+    session_year = forms.ModelChoiceField(queryset=SessionYearModel.objects.all(), empty_label="Select Session Year")

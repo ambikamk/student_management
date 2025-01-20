@@ -54,12 +54,13 @@
         <a href="{% url 'staff:dashboard' %}"><i class="bi bi-house-door-fill"></i> Home</a>
         <a href="{% url 'staff:take_attendance' %}"><i class="bi bi-calendar-plus-fill"></i> Take Attendance</a>
         <a href="{% url 'staff:update_attendance' %}"><i class="bi bi-calendar-check-fill"></i>Update Attendance</a>
-        <a href=""><i class="bi bi-clipboard-data-fill"></i> Add Results</a>
+        <a href="{% url 'staff:add_result' %}"><i class="bi bi-clipboard-data-fill"></i> Add Results</a>
+        <a href="{% url 'staff:upload_study_material' %}"><i class="bi bi-book-fill"></i> Upload materials</a>
         <a href="{% url 'staff:staff_apply_leave' %}"><i class="bi bi-envelope-fill"></i> Apply for Leave</a>
         <a href="{% url 'staff:staff_feedback' %}"><i class="bi bi-chat-left-text-fill"></i> Send Feedback</a>
         <a href="{% url 'staff:staff_notifications' %}"><i class="bi bi-bell-fill"></i> Notification</a>
         <a href="{% url 'staff:staff_profile' %}"><i class="bi bi-person-fill"></i>My Profile</a>
-        <a href="{% url 'staff:change_password_staff' %}"><i class="bi bi-person-fill"></i>Change Password</a>
+        <a href="{% url 'staff:change_password_staff' %}"><i class="bi bi-shield-lock"></i>Change Password</a>
         <a href="{% url 'staff:logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a>
 
     </div>

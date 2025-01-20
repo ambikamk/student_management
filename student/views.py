@@ -1,20 +1,45 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect, get_object_or_404
+import json
+from django.http import HttpResponseBadRequest, JsonResponse
 from django.urls import reverse
 from django.contrib import messages
-from .models import FeedBackStudent, LeaveRequest, Student, LeaveReportStudent, AttendanceReport, Subject
-from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm  # Create a form to handle notification creation
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
 
-# ... (rest of the code remains the same)
+from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm  
+from .models import FeedBackStudent, LeaveRequest, Result, SessionYearModel, Student, LeaveReportStudent, AttendanceReport, StudyMaterial, Subject,NotificationStudent
+ 
+
+    
+
+
 @login_required
 def student_dashboard_view(request):
-    return render(request, 'student/dashboard.html', {'user': request.user})
-# Create your views here.
+    # Get the logged-in student
+    student = Student.objects.get(user=request.user)
 
-# Create your views here.
+    # Count of total attendance (total attendance sessions the student was marked)
+    total_attendance = AttendanceReport.objects.filter(student=student).count()
+
+    # Count of present sessions (where status = True)
+    present_count = AttendanceReport.objects.filter(student=student, status=True).count()
+
+    # Count of absent sessions (where status = False)
+    absent_count = AttendanceReport.objects.filter(student=student, status=False).count()
+
+    # Count of total subjects for the student's course
+    total_subjects = Subject.objects.filter(course=student.course).count()
+
+    context = {
+        'total_attendance': total_attendance,
+        'present_count': present_count,
+        'absent_count': absent_count,
+        'total_subjects': total_subjects,
+        'user': request.user
+    }
+    return render(request, 'student/dashboard.html', context)
+
 
 def student_apply_leave(request):
     form = LeaveRequestForm(request.POST or None)
@@ -43,6 +68,7 @@ def student_apply_leave(request):
 
     return render(request, "student/student_apply_leave.html", context)
 
+
 def student_feedback(request):
     student_obj = Student.objects.get(user=request.user.id)  # Use 'user' instead of 'admin'
     feedback_data = FeedBackStudent.objects.filter(student_id=student_obj)
@@ -68,13 +94,7 @@ def student_feedback_save(request):
             messages.error(request, "Failed to Send Feedback.")
             return redirect('student:student_feedback')
         
-        
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib import messages
-from .models import NotificationStudent, Student
-from .forms import NotificationForm  # Create a form to handle notification creation
-
+ 
 # Check if the user is an admin
 def is_admin(user):
     return user.is_superuser
@@ -112,7 +132,7 @@ def student_notifications(request):
         'notifications': notifications,
         'page_title': 'My Notifications',
     }
-    return render(request, "common/notification_template.html", context)
+    return render(request, "student/notification_template.html", context)
 # Add the following views
 
 @login_required
@@ -203,3 +223,56 @@ def change_password_student(request):
         form = PasswordChangeForm(request.user)
     
     return render(request, 'student/change_password.html', {'form': form})
+
+
+
+@login_required
+def view_result(request):
+    student = Student.objects.get(user=request.user)
+    results = Result.objects.filter(student=student)
+    
+    result_data = []
+    for result in results:
+        # Calculate status (Pass/Fail) - assuming 40% is passing mark
+        total_marks = result.assignment_marks + result.exam_marks
+        max_marks = 100  # Assuming total possible marks is 100
+        percentage = (total_marks / max_marks) * 100
+        status = "Pass" if percentage >= 40 else "Fail"
+        
+        result_data.append({
+            'subject': result.subject,
+            'assignment_marks': result.assignment_marks,
+            'exam_marks': result.exam_marks,
+            'total_marks': total_marks,
+            'status': status
+        })
+    
+    context = {
+        'results': result_data,
+        'student': student
+    }
+    return render(request, 'student/view_result.html', context)
+
+from .forms import StudyMaterialFilterForm
+
+@login_required
+def student_study_materials(request):
+    if not hasattr(request.user, 'student'):
+        return redirect('home')  # Redirect if not a student
+
+    student = request.user.student
+    
+    # Default filter (if no filter is selected)
+    study_materials = StudyMaterial.objects.filter(session_year=student.session_year_id, subject__course=student.course)
+
+    # Handling the filtering logic if the form is submitted
+    if request.method == 'POST':
+        form = StudyMaterialFilterForm(request.POST)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            session_year = form.cleaned_data['session_year']
+            study_materials = study_materials.filter(subject=subject, session_year=session_year)
+    else:
+        form = StudyMaterialFilterForm()
+
+    return render(request, 'student/study_material_list.html', {'materials': study_materials, 'form': form})
