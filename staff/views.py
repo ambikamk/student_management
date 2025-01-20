@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import authenticate, login,logout
+<<<<<<< HEAD
 from django.shortcuts import render ,redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from student.forms import StudyMaterialForm
@@ -16,6 +17,15 @@ from .forms import LeaveReportStaffForm, LeaveRequestForm, NotificationForm, Sta
 
 
 
+=======
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from student.models import SessionYearModel, Student, Subject, Attendance, AttendanceReport, Result
+from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff, NotificationStaffs
+from .forms import LeaveReportStaffForm, LeaveRequestForm, NotificationForm, StaffProfileForm
+
+
+>>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 def home(request):
     return render(request, 'common/home.html')
 
@@ -374,7 +384,10 @@ def change_password_staff(request):
     
     return render(request, 'staff/change_password.html', {'form': form})
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 @login_required
 def add_result(request):
     staff = Staff.objects.get(user=request.user)
@@ -434,6 +447,7 @@ def save_result(request):
             result.exam_marks = float(data['exam_marks'])
             result.save()
     
+<<<<<<< HEAD
     return JsonResponse({'status': 'success'})
 
 
@@ -480,3 +494,6 @@ def delete_study_material(request, material_id):
     material = get_object_or_404(StudyMaterial, id=material_id, uploaded_by=request.user.staff)
     material.delete()
     return redirect('staff:upload_study_material')
+=======
+    return JsonResponse({'status': 'success'})
+>>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e

@@ -1,14 +1,22 @@
+<<<<<<< HEAD
 import json
 from django.http import HttpResponseBadRequest, JsonResponse
+=======
+>>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
+<<<<<<< HEAD
 
 from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm  
 from .models import FeedBackStudent, LeaveRequest, Result, SessionYearModel, Student, LeaveReportStudent, AttendanceReport, StudyMaterial, Subject,NotificationStudent
+=======
+from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm  
+from .models import FeedBackStudent, LeaveRequest, Student, LeaveReportStudent, AttendanceReport, Subject,NotificationStudent, Result
+>>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
  
 
     
@@ -224,8 +232,11 @@ def change_password_student(request):
     
     return render(request, 'student/change_password.html', {'form': form})
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 @login_required
 def view_result(request):
     student = Student.objects.get(user=request.user)
@@ -251,6 +262,7 @@ def view_result(request):
         'results': result_data,
         'student': student
     }
+<<<<<<< HEAD
     return render(request, 'student/view_result.html', context)
 
 from .forms import StudyMaterialFilterForm
@@ -276,3 +288,6 @@ def student_study_materials(request):
         form = StudyMaterialFilterForm()
 
     return render(request, 'student/study_material_list.html', {'materials': study_materials, 'form': form})
+=======
+    return render(request, 'student/view_result.html', context)
+>>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e

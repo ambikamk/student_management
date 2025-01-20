@@ -1,10 +1,14 @@
 from django.contrib import admin
 
-from student.models import Attendance, AttendanceReport
+
 from .models import Staff,LeaveRequest,FeedBackStaff,NotificationStaffs
 
 admin.site.register(Staff)
 admin.site.register(NotificationStaffs)
+<<<<<<< HEAD
+=======
+
+>>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 
 
 

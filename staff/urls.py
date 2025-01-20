@@ -21,7 +21,10 @@ urlpatterns = [
     path('add_result/', views.add_result, name='add_result'),
     path('get_students/', views.get_students, name='get_students'),
     path('save_result/', views.save_result, name='save_result'),
+<<<<<<< HEAD
     path('upload-study-material/', views.upload_study_material, name='upload_study_material'),
     path('delete-material/<int:material_id>/', views.delete_study_material, name='delete_study_material'),
     path('edit-material/<int:material_id>/', views.edit_study_material, name='edit_study_material'),
+=======
+>>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 ]
