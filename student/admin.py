@@ -1,13 +1,14 @@
 from django.contrib import admin
 from .models import Student,Course
-from .models import LeaveRequest,FeedBackStudent,Subject,SessionYearModel,NotificationStudent
+from .models import LeaveRequest,FeedBackStudent,Subject,SessionYearModel,NotificationStudent,Attendance,AttendanceReport
 
 admin.site.register(Student)
 admin.site.register(Course)
 admin.site.register(Subject)
 admin.site.register(SessionYearModel)
 admin.site.register(NotificationStudent)
-
+admin.site.register(Attendance)
+admin.site.register(AttendanceReport)
 
 
 @admin.register(LeaveRequest)
@@ -46,3 +47,5 @@ class FeedBackStudentAdmin(admin.ModelAdmin):
         queryset.delete()
         self.message_user(request, f"{queryset.count()} feedbacks have been deleted.")
     delete_feedbacks.short_description = "Delete selected feedbacks"
+
+

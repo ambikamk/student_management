@@ -1,5 +1,6 @@
 from django import forms
-from .models import LeaveReportStaff,Staff
+from django.contrib.auth.forms import PasswordChangeForm
+from .models import LeaveReportStaff,Staff,LeaveRequest,NotificationStaffs
 
 class LeaveReportStaffForm(forms.ModelForm):
     def _init_(self, *args, **kwargs):
@@ -26,8 +27,7 @@ class LeaveReportStaffForm(forms.ModelForm):
             raise forms.ValidationError("Date is required.")
         return date
 # forms.py
-from django import forms
-from .models import LeaveRequest
+
 
 class LeaveRequestForm(forms.ModelForm):
     class Meta:
@@ -35,9 +35,7 @@ class LeaveRequestForm(forms.ModelForm):
         fields = ['date', 'message']
     date = forms.DateField(widget=forms.SelectDateWidget())
     message = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
-
-from django import forms
-from .models import NotificationStaffs
+    
 
 class NotificationForm(forms.ModelForm):
     class Meta:
@@ -54,7 +52,6 @@ class StaffProfileForm(forms.ModelForm):
         fields = ['full_name', 'email', 'phone', 'address']  
 
 
-from django.contrib.auth.forms import PasswordChangeForm
 
 # Custom Password Change Form (optional, if you want to customize it)
 class CustomPasswordChangeForm(PasswordChangeForm):

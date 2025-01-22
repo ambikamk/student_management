@@ -1,31 +1,28 @@
-<<<<<<< HEAD
 import json
 from django.http import HttpResponseBadRequest, JsonResponse
-=======
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
-<<<<<<< HEAD
 
-from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm  
+from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm,StudyMaterialFilterForm
 from .models import FeedBackStudent, LeaveRequest, Result, SessionYearModel, Student, LeaveReportStudent, AttendanceReport, StudyMaterial, Subject,NotificationStudent
-=======
-from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm  
-from .models import FeedBackStudent, LeaveRequest, Student, LeaveReportStudent, AttendanceReport, Subject,NotificationStudent, Result
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
  
 
     
 
+import matplotlib.pyplot as plt
+import io
+import base64
+from django.shortcuts import render
+from .models import AttendanceReport, Subject, Result
+from django.contrib.auth.decorators import login_required
 
 @login_required
 def student_dashboard_view(request):
-    # Get the logged-in student
-    student = Student.objects.get(user=request.user)
+    student = request.user.student
 
     # Count of total attendance (total attendance sessions the student was marked)
     total_attendance = AttendanceReport.objects.filter(student=student).count()
@@ -39,12 +36,62 @@ def student_dashboard_view(request):
     # Count of total subjects for the student's course
     total_subjects = Subject.objects.filter(course=student.course).count()
 
+    # Visualizing attendance chart
+    attendance_labels = ['Present', 'Absent']
+    attendance_data = [present_count, absent_count]
+    fig, ax = plt.subplots()
+    ax.pie(attendance_data, labels=attendance_labels, autopct='%1.1f%%', startangle=90)
+    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+    # Save the pie chart to a base64 string for embedding in HTML
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    chart_data = base64.b64encode(buf.getvalue()).decode('utf-8')
+    buf.close()
+
+    # Exam marks for level of studies visualization
+    results = Result.objects.filter(student=student)
+    exam_marks = []
+    subjects = []
+    for result in results:
+        subjects.append(result.subject.name)
+        exam_marks.append(result.exam_marks)
+
+    # Classify the student's level based on exam marks
+    level = "Beginner"
+    average_marks = sum(exam_marks) / len(exam_marks) if exam_marks else 0
+
+    if average_marks >= 80:
+        level = "Advanced"
+    elif average_marks >= 60:
+        level = "Intermediate"
+    elif average_marks >= 40:
+        level = "Basic"
+
+    # Visualizing exam marks chart
+    fig2, ax2 = plt.subplots()
+    ax2.bar(subjects, exam_marks, color='skyblue')
+    ax2.set_xlabel('Subjects')
+    ax2.set_ylabel('Marks')
+    ax2.set_title('Exam Marks by Subject')
+
+    # Save the bar chart to a base64 string for embedding in HTML
+    buf2 = io.BytesIO()
+    plt.savefig(buf2, format='png')
+    buf2.seek(0)
+    exam_marks_data = base64.b64encode(buf2.getvalue()).decode('utf-8')
+    buf2.close()
+
     context = {
         'total_attendance': total_attendance,
         'present_count': present_count,
         'absent_count': absent_count,
         'total_subjects': total_subjects,
-        'user': request.user
+        'user': request.user,
+        'attendance_chart': chart_data,
+        'exam_marks_chart': exam_marks_data,
+        'level_of_study': level,
     }
     return render(request, 'student/dashboard.html', context)
 
@@ -232,11 +279,8 @@ def change_password_student(request):
     
     return render(request, 'student/change_password.html', {'form': form})
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 @login_required
 def view_result(request):
     student = Student.objects.get(user=request.user)
@@ -262,10 +306,8 @@ def view_result(request):
         'results': result_data,
         'student': student
     }
-<<<<<<< HEAD
     return render(request, 'student/view_result.html', context)
 
-from .forms import StudyMaterialFilterForm
 
 @login_required
 def student_study_materials(request):
@@ -288,6 +330,3 @@ def student_study_materials(request):
         form = StudyMaterialFilterForm()
 
     return render(request, 'student/study_material_list.html', {'materials': study_materials, 'form': form})
-=======
-    return render(request, 'student/view_result.html', context)
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e

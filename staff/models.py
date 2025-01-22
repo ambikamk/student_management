@@ -18,11 +18,14 @@ class Staff(models.Model):
 
 class LeaveReportStaff(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
-    date = models.CharField(max_length=60)
+    date = models.DateField(max_length=60)
     message = models.TextField()
-    status = models.SmallIntegerField(default=0)
+    status = models.CharField(max_length=20, choices=(('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')))
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.staff} - {self.status}"
 
 
 

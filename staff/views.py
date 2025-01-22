@@ -1,4 +1,8 @@
+
+import io
 import json
+import base64
+import matplotlib.pyplot as plt
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib import messages
@@ -7,7 +11,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import authenticate, login,logout
-<<<<<<< HEAD
 from django.shortcuts import render ,redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from student.forms import StudyMaterialForm
@@ -17,15 +20,6 @@ from .forms import LeaveReportStaffForm, LeaveRequestForm, NotificationForm, Sta
 
 
 
-=======
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
-from student.models import SessionYearModel, Student, Subject, Attendance, AttendanceReport, Result
-from .models import FeedBackStaff, LeaveRequest, Staff, LeaveReportStaff, NotificationStaffs
-from .forms import LeaveReportStaffForm, LeaveRequestForm, NotificationForm, StaffProfileForm
-
-
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 def home(request):
     return render(request, 'common/home.html')
 
@@ -54,31 +48,68 @@ def logout_view(request):
     logout(request)
     return redirect('staff:login')
 
+
 @login_required
 def dashboard_view(request):
-    # Get the logged-in staff member
-    staff = Staff.objects.get(user=request.user)
+    staff = request.user.staff
 
-    # Count of students under this staff
+    # Count of total students under this staff
     students_count = Student.objects.filter(course__subject__staff=staff).distinct().count()
 
     # Count of total attendance taken by this staff
-    attendance_count = Attendance.objects.filter(subject__staff=staff).count()
+    total_attendance = Attendance.objects.filter(subject__staff=staff).count()
 
-    # Count of total leaves taken by this staff
-    leaves_count = LeaveReportStaff.objects.filter(staff=staff).count()
+    # Count of leaves taken by this staff (filter only approved leaves)
+    leaves_count = LeaveReportStaff.objects.filter(staff=staff, status='approved').count()
 
-    # Count of total subjects assigned to this staff
-    subjects_count = Subject.objects.filter(staff=staff).count()
+    # Count of subjects assigned to this staff
+    total_subjects = Subject.objects.filter(staff=staff).count()
+
+    # Visualization for attendance and leave chart
+    if total_attendance == 0 and leaves_count == 0:
+        # Add dummy data to ensure chart visibility when no data is available
+        attendance_labels = ['No Attendance or Leaves']
+        attendance_data = [1]
+    else:
+        attendance_labels = ['Total Attendance', 'Leaves']
+        attendance_data = [total_attendance, leaves_count]
+
+    fig, ax = plt.subplots()
+    ax.pie(attendance_data, labels=attendance_labels, autopct='%1.1f%%', startangle=90)
+    ax.axis('equal')  # Equal aspect ratio ensures the pie is drawn as a circle.
+
+    # Save the pie chart to a base64 string for embedding in HTML
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    attendance_chart_data = base64.b64encode(buf.getvalue()).decode('utf-8')
+    buf.close()
+
+    # Subjects and students chart
+    fig2, ax2 = plt.subplots()
+    ax2.bar(['Subjects', 'Students'], [total_subjects, students_count], color=['skyblue', 'orange'])
+    ax2.set_xlabel('Categories')
+    ax2.set_ylabel('Count')
+    ax2.set_title('Subjects and Students Overview')
+
+    # Save the bar chart to a base64 string for embedding in HTML
+    buf2 = io.BytesIO()
+    plt.savefig(buf2, format='png')
+    buf2.seek(0)
+    subjects_students_chart_data = base64.b64encode(buf2.getvalue()).decode('utf-8')
+    buf2.close()
 
     context = {
         'students_count': students_count,
-        'attendance_count': attendance_count,
+        'total_attendance': total_attendance,
         'leaves_count': leaves_count,
-        'subjects_count': subjects_count,
-        'user': request.user
+        'total_subjects': total_subjects,
+        'attendance_chart': attendance_chart_data,
+        'subjects_students_chart': subjects_students_chart_data,
+        'user': request.user,
     }
     return render(request, 'staff/dashboard.html', context)
+
 
 def staff_apply_leave(request):
     form = LeaveRequestForm(request.POST or None)
@@ -224,13 +255,6 @@ def save_attendance(request):
     subject_id = request.POST.get('subject')
     session_year_id = request.POST.get('session_year')
     student_ids = request.POST.getlist('student_ids[]')
-    attendance_status = request.POST.getlist('attendance_status[]')
-    
-    print(f"Debug - Save Attendance Data:")
-    print(f"Subject ID: {subject_id}")
-    print(f"Session Year ID: {session_year_id}")
-    print(f"Student IDs: {student_ids}")
-    print(f"Attendance Status: {attendance_status}")
     
     try:
         subject = Subject.objects.get(id=subject_id)
@@ -242,20 +266,19 @@ def save_attendance(request):
             attendance_date=timezone.now().date(),
             session_year=session_year
         )
-        print(f"Debug - Created Attendance record: {attendance.id}")
         
         # Create Attendance Report for each student
-        for idx, student_id in enumerate(student_ids):
+        for student_id in student_ids:
             try:
                 student = Student.objects.get(id=student_id)
-                status = attendance_status[idx] if idx < len(attendance_status) else '0'
+                status = request.POST.get(f'attendance_status_{student_id}') == '1'
                 
                 report = AttendanceReport.objects.create(
                     student=student,
                     attendance=attendance,
-                    status=status == '1'  # '1' for present, '0' for absent
+                    status=status  # True for present, False for absent
                 )
-                print(f"Debug - Created AttendanceReport for student {student.full_name}: Present={status == '1'}")
+                print(f"Debug - Created AttendanceReport for student {student.full_name}: Present={status}")
             except Student.DoesNotExist:
                 print(f"Debug - Error: Student with ID {student_id} not found")
             except Exception as e:
@@ -334,20 +357,21 @@ def save_updated_attendance(request):
         
     attendance_id = request.POST.get('attendance_id')
     student_ids = request.POST.getlist('student_ids[]')
-    attendance_status = request.POST.getlist('attendance_status[]')
-    
-    print(f"Debug - Update data: attendance_id={attendance_id}, students={len(student_ids)}, status={len(attendance_status)}")
     
     try:
         attendance = Attendance.objects.get(id=attendance_id)
         
-        for student_id, status in zip(student_ids, attendance_status):
-            attendance_report = AttendanceReport.objects.get(
-                student_id=student_id,
-                attendance=attendance
-            )
-            attendance_report.status = status == '1'
-            attendance_report.save()
+        for student_id in student_ids:
+            try:
+                attendance_report = AttendanceReport.objects.get(
+                    student_id=student_id,
+                    attendance=attendance
+                )
+                status = request.POST.get(f'attendance_status_{student_id}') == '1'
+                attendance_report.status = status
+                attendance_report.save()
+            except AttendanceReport.DoesNotExist:
+                print(f"Debug - Error: Attendance report not found for student {student_id}")
             
         messages.success(request, "Attendance updated successfully")
         return redirect('staff:update_attendance')
@@ -355,7 +379,6 @@ def save_updated_attendance(request):
     except Exception as e:
         messages.error(request, f"Error updating attendance: {str(e)}")
         return redirect('staff:update_attendance')
-
 
 @login_required
 def staff_profile(request):
@@ -384,10 +407,6 @@ def change_password_staff(request):
     
     return render(request, 'staff/change_password.html', {'form': form})
 
-<<<<<<< HEAD
-
-=======
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 @login_required
 def add_result(request):
     staff = Staff.objects.get(user=request.user)
@@ -447,7 +466,6 @@ def save_result(request):
             result.exam_marks = float(data['exam_marks'])
             result.save()
     
-<<<<<<< HEAD
     return JsonResponse({'status': 'success'})
 
 
@@ -494,6 +512,3 @@ def delete_study_material(request, material_id):
     material = get_object_or_404(StudyMaterial, id=material_id, uploaded_by=request.user.staff)
     material.delete()
     return redirect('staff:upload_study_material')
-=======
-    return JsonResponse({'status': 'success'})
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e

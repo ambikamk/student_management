@@ -1,7 +1,8 @@
 from django.apps import AppConfig
 
-
 class StudentConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'student'
-   
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "student"
+
+    def ready(self):
+        import student.signals  # Import the signals when the app is ready

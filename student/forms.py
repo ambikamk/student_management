@@ -1,5 +1,11 @@
 from django import forms
-from .models import LeaveReportStudent, SessionYearModel,Student, Subject
+
+from django.contrib.auth.forms import PasswordChangeForm
+
+from .models import LeaveReportStudent, SessionYearModel,Student, Subject, StudyMaterial,LeaveRequest,NotificationStudent
+
+
+
 
 class LeaveReportStudentForm(forms.ModelForm):
     def _init_(self, *args, **kwargs):
@@ -25,9 +31,6 @@ class LeaveReportStudentForm(forms.ModelForm):
         if date is None:
             raise forms.ValidationError("Date is required.")
         return date
-# forms.py
-from django import forms
-from .models import LeaveRequest
 
 class LeaveRequestForm(forms.ModelForm):
     class Meta:
@@ -35,9 +38,6 @@ class LeaveRequestForm(forms.ModelForm):
         fields = ['date', 'message']
     date = forms.DateField(widget=forms.SelectDateWidget())
     message = forms.CharField(widget=forms.Textarea(attrs={'rows': 4, 'cols': 40}))
-
-from django import forms
-from .models import NotificationStudent
 
 class NotificationForm(forms.ModelForm):
     class Meta:
@@ -53,7 +53,6 @@ class StudentProfileForm(forms.ModelForm):
         model = Student
         fields = ['full_name', 'email', 'phone', 'address', 'session_year_id', 'course']  # Add other fields you want to allow for update
 
-from django.contrib.auth.forms import PasswordChangeForm
 
 # Custom Password Change Form (optional, if you want to customize it)
 class CustomPasswordChangeForm(PasswordChangeForm):
@@ -61,9 +60,6 @@ class CustomPasswordChangeForm(PasswordChangeForm):
     new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
-
-from django import forms
-from .models import StudyMaterial
 
 class StudyMaterialForm(forms.ModelForm):
     class Meta:

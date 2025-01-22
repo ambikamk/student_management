@@ -125,10 +125,6 @@ class AttendanceReport(models.Model):
         self.updated_at = timezone.now()
         return super().save(*args, **kwargs)
 
-<<<<<<< HEAD
-
-=======
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 class Result(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
@@ -144,7 +140,6 @@ class Result(models.Model):
     @property
     def total_marks(self):
         return self.assignment_marks + self.exam_marks
-<<<<<<< HEAD
 
 
 class StudyMaterial(models.Model):
@@ -157,5 +152,3 @@ class StudyMaterial(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.subject.name}"
-=======
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e

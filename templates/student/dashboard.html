@@ -2,15 +2,99 @@
 {% block content %}
     <title>Student Dashboard</title>
 
-    <div class="container mt-4">
+    <style>
+        /* Global Styling */
+        body {
+            background-color: #f4f7fa;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            margin-top: 30px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, rgba(255, 204, 0, 0.7), rgba(255, 255, 255, 0.7));
+            border-radius: 15px;
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .card-text {
+            font-size: 40px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        /* Custom colors for different cards */
+        .total-attendance {
+            background-color: #ffcc66;
+        }
+
+        .absent-count {
+            background-color: #ff6666;
+        }
+
+        .present-count {
+            background-color: #66cc66;
+        }
+
+        .total-subjects {
+            background-color: #66c2ff;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            margin-top: 30px;
+        }
+
+        .chart-container .card {
+            height: auto;
+        }
+
+        /* Level of Study Section */
+        .level-study {
+            margin-top: 50px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-study .card-title {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .level-study .card-text {
+            font-size: 22px;
+            color: #555;
+        }
+    </style>
+
+    <div class="container">
         <!-- Cards Row -->
         <div class="row">
             <!-- Card for Total Attendance -->
             <div class="col-md-3 mb-4">
-                <div class="card" style="height:150px; background-color: antiquewhite;">
+                <div class="card total-attendance">
                     <div class="card-body">
-                        
-                        <p class="card-text" style=" font-size: 40px;">{{ total_attendance }}</p>
+                        <p class="card-text">{{ total_attendance }}</p>
                         <h5 class="card-title">Total Attendance</h5>
                     </div>
                 </div>
@@ -18,10 +102,9 @@
 
             <!-- Card for Absent -->
             <div class="col-md-3 mb-4">
-                <div class="card" style="height:150px; background-color: rgb(248, 194, 124);">
+                <div class="card absent-count">
                     <div class="card-body">
-                       
-                        <p class="card-text" style=" font-size: 40px;">{{ absent_count }}</p>
+                        <p class="card-text">{{ absent_count }}</p>
                         <h5 class="card-title">Absent</h5>
                     </div>
                 </div>
@@ -29,10 +112,9 @@
 
             <!-- Card for Present -->
             <div class="col-md-3 mb-4">
-                <div class="card" style="height:150px; background-color: rgb(214, 184, 145);">
+                <div class="card present-count">
                     <div class="card-body">
-                        
-                        <p class="card-text" style=" font-size: 40px;">{{ present_count }}</p>
+                        <p class="card-text">{{ present_count }}</p>
                         <h5 class="card-title">Present</h5>
                     </div>
                 </div>
@@ -40,15 +122,49 @@
 
             <!-- Card for Total Subjects -->
             <div class="col-md-3 mb-4">
-                <div class="card" style="height:150px; background-color: rgb(240, 196, 139);">
+                <div class="card total-subjects">
                     <div class="card-body">
-                        
-                        <p class="card-text" style=" font-size: 40px;">{{ total_subjects }}</p>
+                        <p class="card-text">{{ total_subjects }}</p>
                         <h5 class="card-title">Total Subjects</h5>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Display Attendance and Exam Marks Charts -->
+        <div class="row chart-container">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Attendance Overview</h5>
+                        <img src="data:image/png;base64,{{ attendance_chart }}" alt="Attendance Chart" style="width: 100%; height: auto;" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Display Exam Marks Chart -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Exam Marks Overview</h5>
+                        <img src="data:image/png;base64,{{ exam_marks_chart }}" alt="Exam Marks Chart" style="width: 100%; height: auto;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level of Study -->
+        <div class="row">
+            <div class="col-md-12 mb-4 level-study">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Level of Study</h5>
+                        <p class="card-text">Your level of study is: <strong>{{ level_of_study }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     
 {% endblock %}

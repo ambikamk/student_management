@@ -18,11 +18,8 @@ from django.contrib import admin
 from django.urls import path,include
 from staff.views import home, login_view
 from staff.views import home
-<<<<<<< HEAD
 from django.conf import settings
 from django.conf.urls.static import static
-=======
->>>>>>> bd0dc2661a40dec183d115edf39bb71d9b09c58e
 
 urlpatterns = [
     path('',home,name='home'),

@@ -84,7 +84,7 @@
                                         <td>
                                             <div class="form-check form-check-inline">
                                                 <input class="form-check-input" type="radio" 
-                                                       name="attendance_status[]" 
+                                                       name="attendance_status_{{ report.student.id }}" 
                                                        id="present_{{ report.student.id }}" 
                                                        value="1" 
                                                        {% if report.status %}checked{% endif %}>
@@ -92,7 +92,7 @@
                                             </div>
                                             <div class="form-check form-check-inline">
                                                 <input class="form-check-input" type="radio" 
-                                                       name="attendance_status[]" 
+                                                       name="attendance_status_{{ report.student.id }}" 
                                                        id="absent_{{ report.student.id }}" 
                                                        value="0"
                                                        {% if not report.status %}checked{% endif %}>
