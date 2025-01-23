@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Student,Course
-from .models import LeaveRequest,FeedBackStudent,Subject,SessionYearModel,NotificationStudent,Attendance,AttendanceReport
+from .models import Fees, Student,Course
+from .models import LeaveRequest,FeedBackStudent,Subject,SessionYearModel,NotificationStudent,Attendance,AttendanceReport,Timetable
 
 admin.site.register(Student)
 admin.site.register(Course)
@@ -49,3 +49,16 @@ class FeedBackStudentAdmin(admin.ModelAdmin):
     delete_feedbacks.short_description = "Delete selected feedbacks"
 
 
+
+class TimetableAdmin(admin.ModelAdmin):
+    list_display = ['day', 'session_year', 'time_slot_1', 'time_slot_2', 'time_slot_3', 'time_slot_4', 'time_slot_5']
+    search_fields = ['day', 'session_year__session_start_year']
+
+admin.site.register(Timetable, TimetableAdmin)
+
+
+@admin.register(Fees)
+class FeesAdmin(admin.ModelAdmin):
+    list_display = ('student', 'amount', 'is_paid', 'created_at')
+    list_filter = ('is_paid',)
+    search_fields = ('student__full_name',)

@@ -10,9 +10,6 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import LeaveReportStudentForm, LeaveRequestForm, NotificationForm, StudentProfileForm,StudyMaterialFilterForm
 from .models import FeedBackStudent, LeaveRequest, Result, SessionYearModel, Student, LeaveReportStudent, AttendanceReport, StudyMaterial, Subject,NotificationStudent
  
-
-    
-
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -330,3 +327,87 @@ def student_study_materials(request):
         form = StudyMaterialFilterForm()
 
     return render(request, 'student/study_material_list.html', {'materials': study_materials, 'form': form})
+
+from django.shortcuts import render
+from .models import Timetable
+from django.http import Http404
+
+def student_timetable(request):
+    # Get the logged-in student
+    if hasattr(request.user, 'student') and request.user.student.session_year_id:
+        session_year_id = request.user.student.session_year_id.id
+        timetable = Timetable.objects.filter(session_year_id=session_year_id)
+    else:
+        raise Http404("Session year not specified")
+
+    context = {'timetable': timetable}
+    return render(request, 'student/timetable.html', context)
+
+
+import razorpay
+from django.shortcuts import render, get_object_or_404, redirect
+from django.conf import settings
+from django.http import JsonResponse
+from .models import Fees
+
+def fee_list(request):
+    student = request.user.student
+    fees = Fees.objects.filter(student=student)
+    return render(request, 'student/fee_list.html', {'fees': fees})
+
+def create_razorpay_order(request, fee_id):
+    fee = get_object_or_404(Fees, id=fee_id)
+
+    if fee.is_paid:
+        return JsonResponse({'error': 'Fee already paid'}, status=400)
+
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    
+    order_data = {
+        "amount": int(fee.amount * 100),  # Convert to paise
+        "currency": "INR",
+        "payment_capture": "1",
+    }
+
+    order = client.order.create(order_data)
+
+    fee.razorpay_order_id = order['id']
+    fee.save()
+
+    return JsonResponse(order)
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def verify_payment(request):
+    if request.method == "POST":
+        data = request.POST
+        razorpay_order_id = data.get('razorpay_order_id')
+        payment_id = data.get('razorpay_payment_id')
+        signature = data.get('razorpay_signature')
+
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+        try:
+            client.utility.verify_payment_signature({
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': payment_id,
+                'razorpay_signature': signature
+            })
+
+            fee = Fees.objects.get(razorpay_order_id=razorpay_order_id)
+            fee.is_paid = True
+            fee.payment_id = payment_id
+            fee.save()
+
+            messages.success(request, 'Payment successful!')
+            return redirect('student:fee_list')
+
+        except razorpay.errors.SignatureVerificationError:
+            messages.error(request, 'Payment verification failed!')
+            return redirect('student:fee_list')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect('student:fee_list')
+
+    return HttpResponseBadRequest('Invalid request')

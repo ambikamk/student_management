@@ -157,4 +157,5 @@ EMAIL_HOST_USER = 'mkambika287@gmail.com'  # Your email address
 EMAIL_HOST_PASSWORD = 'asiachksnrqzrlbk'  # Your email password or App password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Set the default from email
 
-
+RAZORPAY_KEY_ID = "rzp_test_LKgaCTOOT6bWsK"
+RAZORPAY_KEY_SECRET = "gqI8bluh3qGkTFG01achKwy7"

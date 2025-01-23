@@ -19,4 +19,8 @@ urlpatterns = [
     path('student/change_password/', views.change_password_student, name='change_password_student'),
     path('view_result/', views.view_result, name='view_result'),
     path('study-materials/', views.student_study_materials, name='study_material_list'),
+    path('timetable/', views.student_timetable, name='student_timetable'),
+    path('fees/', views.fee_list, name='fee_list'),
+    path('create_razorpay_order/<int:fee_id>/', views.create_razorpay_order, name='create_razorpay_order'),
+    path('verify_payment/', views.verify_payment, name='verify_payment'),
 ]

@@ -24,4 +24,5 @@ urlpatterns = [
     path('upload-study-material/', views.upload_study_material, name='upload_study_material'),
     path('delete-material/<int:material_id>/', views.delete_study_material, name='delete_study_material'),
     path('edit-material/<int:material_id>/', views.edit_study_material, name='edit_study_material'),
+    path('timetable/', views.staff_timetable, name='staff_timetable'),
 ]

@@ -1,0 +1,93 @@
+{% extends 'student/base.html' %}
+
+{% block content %}
+<style>
+    /* Add custom styles for timetable */
+.table th {
+    background-color: #343a40;
+    color: white;
+    text-align: center;
+}
+
+.table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table td, .table th {
+    padding: 10px;
+}
+
+h2 {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.table-bordered {
+    border-color: #dee2e6;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f2f2f2;
+}
+
+</style>
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Timetable</h2>
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>Day</th>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+                <th>4</th>
+                <th>5</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in timetable %}
+            <tr>
+                <td>{{ day.get_day_display }}</td>
+                <td>
+                    {% if day.time_slot_1 %}
+                        {{ day.time_slot_1.name }}
+                    {% else %}
+                        No Subject
+                    {% endif %}
+                </td>
+                <td>
+                    {% if day.time_slot_2 %}
+                        {{ day.time_slot_2.name }}
+                    {% else %}
+                        No Subject
+                    {% endif %}
+                </td>
+                <td>
+                    {% if day.time_slot_3 %}
+                        {{ day.time_slot_3.name }}
+                    {% else %}
+                        No Subject
+                    {% endif %}
+                </td>
+                <td>
+                    {% if day.time_slot_4 %}
+                        {{ day.time_slot_4.name }}
+                    {% else %}
+                        No Subject
+                    {% endif %}
+                </td>
+                <td>
+                    {% if day.time_slot_5 %}
+                        {{ day.time_slot_5.name }}
+                    {% else %}
+                        No Subject
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

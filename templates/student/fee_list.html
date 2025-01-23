@@ -1,0 +1,111 @@
+{% extends 'student/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Fees</h2>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <!-- <th>Status</th> -->
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fee in fees %}
+                <tr>
+                    <td>{{ fee.description }}</td>
+                    <td>₹{{ fee.amount }}</td>
+                    <!-- <td>
+                        {% if fee.is_paid %}
+                            <span class="badge badge-success">Paid</span>
+                        {% else %}
+                            <span class="badge badge-warning">Pending</span>
+                        {% endif %}
+                    </td> -->
+                    <td>
+                        {% if not fee.is_paid %}
+                        <button class="btn btn-primary btn-sm" onclick="payNow('{{ fee.id }}')">Pay Now</button>
+                        {% else %}
+                        <button class="btn btn-secondary btn-sm" disabled>Paid</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    function payNow(feeId) {
+        fetch(`{% url 'student:create_razorpay_order' 0 %}`.replace('0', feeId))
+        .then(response => response.json())
+        .then(data => {
+            var options = {
+                "key": "{{ RAZORPAY_KEY_ID }}",
+                "amount": data.amount,
+                "currency": "INR",
+                "name": "College Name",
+                "description": "Fee Payment",
+                "order_id": data.id,
+                "handler": function (response) {
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{% url "student:verify_payment" %}';
+
+                    // Add CSRF token
+                    var csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+                    csrfInput.value = '{{ csrf_token }}';
+                    form.appendChild(csrfInput);
+
+                    // Add payment details
+                    var fields = {
+                        'razorpay_payment_id': response.razorpay_payment_id,
+                        'razorpay_order_id': response.razorpay_order_id,
+                        'razorpay_signature': response.razorpay_signature
+                    };
+
+                    for (var key in fields) {
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = fields[key];
+                        form.appendChild(input);
+                    }
+
+                    document.body.appendChild(form);
+                    form.submit();
+                },
+                "prefill": {
+                    "name": "{{ request.user.get_full_name }}",
+                    "email": "{{ request.user.email }}"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                },
+                "modal": {
+                    "ondismiss": function() {
+                        console.log('Payment window closed');
+                    }
+                }
+            };
+            var rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                alert('Payment failed: ' + response.error.description);
+            });
+            rzp.open();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error creating payment order');
+        });
+    }
+</script>
+
+{% endblock %}

@@ -16,6 +16,7 @@ class Staff(models.Model):
     def __str__(self):
         return self.full_name
 
+
 class LeaveReportStaff(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     date = models.DateField(max_length=60)
@@ -62,3 +63,4 @@ class NotificationStaffs(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = models.Manager()
+

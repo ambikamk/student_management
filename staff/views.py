@@ -48,66 +48,83 @@ def logout_view(request):
     logout(request)
     return redirect('staff:login')
 
+import io
+import base64
+import matplotlib
+matplotlib.use('Agg')  # Use a non-interactive backend
+import matplotlib.pyplot as plt
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+
 
 @login_required
 def dashboard_view(request):
-    staff = request.user.staff
+    try:
+        staff = Staff.objects.get(user=request.user)
+    except Staff.DoesNotExist:
+        return HttpResponse("Staff data not found for the current user.", status=404)
 
-    # Count of total students under this staff
     students_count = Student.objects.filter(course__subject__staff=staff).distinct().count()
-
-    # Count of total attendance taken by this staff
     total_attendance = Attendance.objects.filter(subject__staff=staff).count()
-
-    # Count of leaves taken by this staff (filter only approved leaves)
     leaves_count = LeaveReportStaff.objects.filter(staff=staff, status='approved').count()
-
-    # Count of subjects assigned to this staff
+    pending_leaves_count = LeaveReportStaff.objects.filter(staff=staff, status='pending').count()
     total_subjects = Subject.objects.filter(staff=staff).count()
 
-    # Visualization for attendance and leave chart
-    if total_attendance == 0 and leaves_count == 0:
-        # Add dummy data to ensure chart visibility when no data is available
-        attendance_labels = ['No Attendance or Leaves']
-        attendance_data = [1]
-    else:
-        attendance_labels = ['Total Attendance', 'Leaves']
-        attendance_data = [total_attendance, leaves_count]
-
-    fig, ax = plt.subplots()
-    ax.pie(attendance_data, labels=attendance_labels, autopct='%1.1f%%', startangle=90)
-    ax.axis('equal')  # Equal aspect ratio ensures the pie is drawn as a circle.
-
-    # Save the pie chart to a base64 string for embedding in HTML
+    # Pie Chart
+    attendance_labels = ['Total Attendance', 'Leaves'] if total_attendance or leaves_count else ['No Attendance or Leaves']
+    attendance_data = [total_attendance, leaves_count] if total_attendance or leaves_count else [1]
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.pie(attendance_data, labels=attendance_labels, autopct='%1.1f%%', startangle=90, colors=['#4CAF50', '#FF6347'])
+    ax.axis('equal')
+    ax.set_title("Attendance vs Leaves")
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
     attendance_chart_data = base64.b64encode(buf.getvalue()).decode('utf-8')
-    buf.close()
+    plt.close(fig)
 
-    # Subjects and students chart
-    fig2, ax2 = plt.subplots()
-    ax2.bar(['Subjects', 'Students'], [total_subjects, students_count], color=['skyblue', 'orange'])
+    # Bar Chart
+    fig2, ax2 = plt.subplots(figsize=(8, 6))
+    ax2.bar(['Subjects', 'Students'], [total_subjects, students_count], color=['#8A2BE2', '#FFD700'])
     ax2.set_xlabel('Categories')
     ax2.set_ylabel('Count')
     ax2.set_title('Subjects and Students Overview')
-
-    # Save the bar chart to a base64 string for embedding in HTML
     buf2 = io.BytesIO()
     plt.savefig(buf2, format='png')
     buf2.seek(0)
     subjects_students_chart_data = base64.b64encode(buf2.getvalue()).decode('utf-8')
-    buf2.close()
+    plt.close(fig2)
+
+    # Stacked Bar Chart
+    subjects = Subject.objects.filter(staff=staff)
+    subject_names = [subject.name for subject in subjects]
+    subject_student_counts = [Student.objects.filter(course__subject=subject).count() for subject in subjects]
+    fig4, ax4 = plt.subplots(figsize=(10, 6))
+    ax4.bar(subject_names, subject_student_counts, color='purple')
+    ax4.set_xticks(range(len(subject_names)))
+    ax4.set_xticklabels(subject_names, rotation=45, ha='right')
+    ax4.set_xlabel('Subjects')
+    ax4.set_ylabel('Student Count')
+    ax4.set_title('Students Enrolled per Subject')
+    buf4 = io.BytesIO()
+    plt.savefig(buf4, format='png')
+    buf4.seek(0)
+    subject_student_chart_data = base64.b64encode(buf4.getvalue()).decode('utf-8')
+    plt.close(fig4)
 
     context = {
         'students_count': students_count,
         'total_attendance': total_attendance,
         'leaves_count': leaves_count,
+        'pending_leaves_count': pending_leaves_count,
         'total_subjects': total_subjects,
         'attendance_chart': attendance_chart_data,
         'subjects_students_chart': subjects_students_chart_data,
+        'subject_student_chart': subject_student_chart_data,
         'user': request.user,
     }
+
     return render(request, 'staff/dashboard.html', context)
 
 
@@ -512,3 +529,30 @@ def delete_study_material(request, material_id):
     material = get_object_or_404(StudyMaterial, id=material_id, uploaded_by=request.user.staff)
     material.delete()
     return redirect('staff:upload_study_material')
+
+from django.shortcuts import render
+from student.models import Timetable
+from django.http import Http404
+
+def staff_timetable(request):
+    # Get the staff member from the logged-in user
+    staff = request.user.staff  # Assuming user has a related staff profile
+    
+    # Get timetable for courses taught by the staff member
+    timetable = Timetable.objects.filter(
+        time_slot_1__staff=staff
+    ) | Timetable.objects.filter(
+        time_slot_2__staff=staff
+    ) | Timetable.objects.filter(
+        time_slot_3__staff=staff
+    ) | Timetable.objects.filter(
+        time_slot_4__staff=staff
+    ) | Timetable.objects.filter(
+        time_slot_5__staff=staff
+    )
+
+    if not timetable:
+        raise Http404("Timetable not found for this staff member")
+
+    context = {'timetable': timetable}
+    return render(request, 'staff/timetable.html', context)

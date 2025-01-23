@@ -152,3 +152,38 @@ class StudyMaterial(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.subject.name}"
+
+class Timetable(models.Model):
+    DAYS_OF_WEEK = [
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+    ]
+
+    day = models.CharField(max_length=10, choices=DAYS_OF_WEEK)
+    time_slot_1 = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='monday_slot_1')
+    time_slot_2 = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='monday_slot_2')
+    time_slot_3 = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='monday_slot_3')
+    time_slot_4 = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='monday_slot_4')
+    time_slot_5 = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True, blank=True, related_name='monday_slot_5')
+    session_year = models.ForeignKey(SessionYearModel, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.day.capitalize()} - {self.session_year.session_start_year.year}-{self.session_year.session_end_year.year}"
+    
+class Fees(models.Model):
+    student = models.ForeignKey('Student', on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField()
+    is_paid = models.BooleanField(default=False)
+    razorpay_order_id = models.CharField(max_length=255, blank=True, null=True)
+    payment_id = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.student.full_name} - ₹{self.amount} - {'Paid' if self.is_paid else 'Pending'}"
+
+
