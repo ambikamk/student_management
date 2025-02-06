@@ -237,7 +237,7 @@
                         {{ user.username }}
                     {% endif %}
                 </span>
-                    <li><a href="{% url 'staff:dashboard' %}">Dashboard</a></li>
+                    
                     <li><a href="{% url 'staff:logout' %}">Logout</a></li>
                 {% else %}
                 <li><a href="{% url 'staff:login' %}"><i class="bi bi-box-arrow-right"></i> Login</a></li>
@@ -292,7 +292,7 @@
             <h2>Welcome to the Global University</h2>
             <p>Manage your academic progress, feedback, and leave applications with ease.</p>
             {% if user.is_authenticated %}
-                <a href="{% url 'staff:dashboard' %}" class="btn">Go to Dashboard</a>
+             
             {% else %}
                 <a href="{% url 'staff:login' %}" class="btn">Login Now</a>
             {% endif %}
