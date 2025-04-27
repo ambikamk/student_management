@@ -1,43 +1,83 @@
 {% extends 'student/base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Fees</h2>
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Description</th>
-                    <th>Amount</th>
-                    <!-- <th>Status</th> -->
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for fee in fees %}
-                <tr>
-                    <td>{{ fee.description }}</td>
-                    <td>₹{{ fee.amount }}</td>
-                    <!-- <td>
-                        {% if fee.is_paid %}
-                            <span class="badge badge-success">Paid</span>
-                        {% else %}
-                            <span class="badge badge-warning">Pending</span>
-                        {% endif %}
-                    </td> -->
-                    <td>
-                        {% if not fee.is_paid %}
-                        <button class="btn btn-primary btn-sm" onclick="payNow('{{ fee.id }}')">Pay Now</button>
-                        {% else %}
-                        <button class="btn btn-secondary btn-sm" disabled>Paid</button>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-center mb-0 font-weight-bold">Fee Details</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="py-3">Description</th>
+                                    <th class="py-3">Amount</th>
+                                    <th class="py-3 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fee in fees %}
+                                <tr>
+                                    <td class="align-middle">{{ fee.description }}</td>
+                                    <td class="align-middle font-weight-bold">₹{{ fee.amount }}</td>
+                                    <td class="align-middle text-center">
+                                        {% if not fee.is_paid %}
+                                        <button class="btn btn-primary btn-sm px-4 rounded-pill" onclick="payNow('{{ fee.id }}')">
+                                            <i class="fas fa-credit-card mr-2"></i>Pay Now
+                                        </button>
+                                        {% else %}
+                                        <button class="btn btn-success btn-sm px-4 rounded-pill" disabled>
+                                            <i class="fas fa-check mr-2"></i>Paid
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .card-header {
+        border-bottom: none;
+    }
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: #495057;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .btn {
+        transition: all 0.3s ease;
+    }
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+    .btn-success {
+        background-color: #1cc88a;
+        border-color: #1cc88a;
+    }
+</style>
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>

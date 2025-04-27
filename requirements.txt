@@ -1,0 +1,7 @@
+Django
+razorpay
+matplotlib
+pytz
+sqlparse
+asgiref
+django-crispy-forms

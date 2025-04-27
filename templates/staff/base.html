@@ -60,11 +60,14 @@ header img {
                 
                 <div class="d-flex align-items-center">
                    
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center" style="margin-left:-200px;">
                        
-                        <i class="bi bi-person me-2"></i> <span class="ms-2" >{{ request.user.username }}</span>
+                        <i class="bi bi-person me-2"></i> <span class="ms-1" >{{ request.user.username }}</span>
+                        <a href="{% url 'staff:logout' %} " style="text-decoration: none; margin-left: 10px;"><i class="bi bi-box-arrow-right"></i> Logout</a>
                     </div>
+                    
                 </div>
+                
             </header>
 
             <!-- Dynamic Content -->
