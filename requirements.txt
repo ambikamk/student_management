@@ -5,3 +5,5 @@ pytz
 sqlparse
 asgiref
 django-crispy-forms
+gunicorn
+django-jazzmin
